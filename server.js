@@ -15,7 +15,7 @@ server.use(express.json());
 server.use(helmet());
 server.use(logger('dev'));
 
-// custom middleware
+// custom middleware - don't call it like server.use(typeLogger()); ❌
 server.use(typeLogger);
 server.use(addName);
 //server.use(lockout);
@@ -62,7 +62,16 @@ function moodyGatekeeper(req, res, next) {
   } else {
     next();
   }
-
 }
+
+// want this immediate before our export
+// global error-handling middleware goes to bottom <== like giant catch
+server.use((err, req, res, next) => {
+  // only executes if next(err) is called with an argument
+  res.status(500).json({
+    message: "Bad request",
+    err
+  })
+});
 
 module.exports = server;
